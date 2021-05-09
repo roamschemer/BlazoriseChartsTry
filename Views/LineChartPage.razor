@@ -6,7 +6,7 @@
 <LineChart @ref="lineChart" TItem="double" />
 
 @code{
-    LineChart<double> lineChart = new LineChart<double>();
+    LineChart<double> lineChart;
 
     protected override async Task OnAfterRenderAsync(bool firstRender) {
         if (firstRender) {
