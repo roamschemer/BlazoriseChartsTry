@@ -1,0 +1,88 @@
+﻿@page "/ScatterChartPage"
+<h3>ScatterChartPage</h3>
+<p>https://github.com/stsrki/Blazorise/discussions/2127</p>
+
+<button @onclick="@(async () => await HandleRedraw(chart,GetChartDataset))">Redraw</button>
+<Chart @ref="chart" TItem="Plot" OptionsObject="@options" />
+
+@code {
+    Chart<Plot> chart;
+
+    public struct Plot {
+        public Plot(double x, double y) {
+            X = x;
+            Y = y;
+        }
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+
+    object options = new {
+        Scales = new {
+            XAxes = new[]
+        {
+                new
+                {
+                    Type = "linear",
+                    Position = "bottom"
+                }
+            }
+        }
+    };
+
+    string[] Labels = { "Red", "Blue", "Yellow", "Green", "Purple", "Orange" };
+    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
+    List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
+
+    bool isAlreadyInitialised;
+
+    Random random = new Random(DateTime.Now.Millisecond);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (!isAlreadyInitialised) {
+            isAlreadyInitialised = true;
+
+            await Task.WhenAll(
+                HandleRedraw(chart, GetChartDataset));
+        }
+    }
+
+    async Task HandleRedraw<TDataSet, TItem, TOptions, TModel>(Blazorise.Charts.BaseChart<TDataSet, TItem, TOptions, TModel> chart, Func<TDataSet> getDataSet)
+        where TDataSet : ChartDataset<TItem>
+        where TOptions : ChartOptions
+        where TModel : ChartModel {
+        await chart.Clear();
+
+        await chart.AddLabelsDatasetsAndUpdate(Labels, getDataSet());
+    }
+
+    async Task SetDataAndUpdate<TDataSet, TItem, TOptions, TModel>(Blazorise.Charts.BaseChart<TDataSet, TItem, TOptions, TModel> chart, Func<List<TItem>> items)
+        where TDataSet : ChartDataset<TItem>
+        where TOptions : ChartOptions
+        where TModel : ChartModel {
+        await chart.SetData(0, items());
+        await chart.Update();
+    }
+
+    LineChartDataset<Plot> GetChartDataset() {
+        return new LineChartDataset<Plot> {
+            Type = "scatter",
+            Label = "Scatter Dataset",
+            Data = RandomizeData(),
+            BackgroundColor = backgroundColors,
+            BorderColor = borderColors,
+            ShowLine = false
+        };
+    }
+
+    List<Plot> RandomizeData() {
+        return new List<Plot> {
+            new Plot(random.Next( 3, 50 ) * random.Next(), random.Next( 3, 50 ) * random.Next()),
+            new Plot(random.Next( 3, 50 ) * random.Next(), random.Next( 3, 50 ) * random.Next()),
+            new Plot(random.Next( 3, 50 ) * random.Next(), random.Next( 3, 50 ) * random.Next()),
+            new Plot(random.Next( 3, 50 ) * random.Next(), random.Next( 3, 50 ) * random.Next()),
+            new Plot(random.Next( 3, 50 ) * random.Next(), random.Next( 3, 50 ) * random.Next()),
+            new Plot(random.Next( 3, 50 ) * random.Next(), random.Next( 3, 50 ) * random.Next()),
+        };
+    }
+}
